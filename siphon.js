@@ -53,7 +53,7 @@ getFeed = function(feedName, feedHour, callBack) {
 			});
 		}
 	});
-}
+}  
 
 
 getFeedByDay = function(feed, day, callBack) {
