@@ -127,7 +127,7 @@ feed = process.argv[2];
 day = process.argv[3];
 hour = process.argv[4];
 
-allowedFeeds = ['standard_feed', 'segment_feed', 'bid_landscape_feed'];
+allowedFeeds = ['standard_feed', 'segment_feed', 'bid_landscape_feed', 'auction_segment_feed'];
 
 
 if (allowedFeeds.indexOf(feed) == -1) {
