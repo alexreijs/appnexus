@@ -1,4 +1,6 @@
 auth.js
 auth
 token
+siphon
 data/
+node_modules/

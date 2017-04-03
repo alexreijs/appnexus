@@ -4,10 +4,9 @@ var auth = require('./auth.js');
 var util = require('util');
 var tokenPath = './token';
 
-
 exports.tokenValue = function (callBack) {
 	if (exports.isValidFromDisk()) {
-		console.log('Found valid token on disk')
+		//console.log('Found valid token on disk')
 		callBack(fs.readFileSync(tokenPath, 'utf-8'));
 	}
 	else {
