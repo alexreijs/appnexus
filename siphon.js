@@ -1,3 +1,29 @@
+outputdir = process.argv[2];
+feed = process.argv[3];
+day = process.argv[4];
+hour = process.argv[5];
+
+allowedFeeds = ['standard_feed', 'segment_feed', 'bid_landscape_feed', 'auction_segment_feed'];
+
+if (typeof outputdir == 'undefined') {
+	console.log('\nPlease enter the output directory as the first argument.');
+	console.log('Use "." for current folder');
+	process.exit();
+}
+else if (allowedFeeds.indexOf(feed) == -1) {
+	console.log('\nPlease enter the type of feed you want to use as the second argument.');
+	console.log('Possible feeds include: ' + allowedFeeds.join(', ') + '.');
+	process.exit();
+}
+else if (new RegExp('^[0-9]{4}_[0-9]{2}_[0-9]{2}$').test(day) == false) {
+	console.log('\nPlease enter a correct day as third argument.');
+	console.log('The correct format to use is YYYY_MM_DD');
+	process.exit();
+}
+
+exports.outputdir = outputdir;
+
+
 var fs = require('fs');
 var http = require('http');
 var url = require('url');
@@ -5,7 +31,7 @@ var auth = require('./auth.js');
 var util = require('util');
 var mkdirp = require('mkdirp');
 var appClient = require('./appClient.js');
-var siphonPath = './siphon';
+var siphonPath = outputdir + '/siphon';
 
 
 getFeed = function(feedName, feedDay, feedHour, callBack) {
@@ -117,31 +143,6 @@ getFeedByDay = function(feed, day, callBack) {
 	}
 	
 	getFeedDay();
-}
-
-
-
-outputdir = process.argv[2];
-feed = process.argv[3];
-day = process.argv[4];
-hour = process.argv[5];
-
-allowedFeeds = ['standard_feed', 'segment_feed', 'bid_landscape_feed', 'auction_segment_feed'];
-
-if (typeof outputdir == 'undefined') {
-	console.log('\nPlease enter the output directory as the first argument.');
-	console.log('Use "." for current folder');
-	process.exit();
-}
-else if (allowedFeeds.indexOf(feed) == -1) {
-	console.log('\nPlease enter the type of feed you want to use as the second argument.');
-	console.log('Possible feeds include: ' + allowedFeeds.join(', ') + '.');
-	process.exit();
-}
-else if (new RegExp('^[0-9]{4}_[0-9]{2}_[0-9]{2}$').test(day) == false) {
-	console.log('\nPlease enter a correct day as third argument.');
-	console.log('The correct format to use is YYYY_MM_DD');
-	process.exit();
 }
 
 

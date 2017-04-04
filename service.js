@@ -1,10 +1,29 @@
+var fields = require('./fields.js');
+
+
+outputdir = process.argv[2];
+serviceName = process.argv[3];
+
+if (typeof outputdir == 'undefined') {
+	console.log('\nPlease enter the output directory as the first argument.');
+	console.log('Use "." for current folder');
+	process.exit();
+}
+else if (Object.keys(fields).indexOf(serviceName) == -1) {
+	console.log('Please enter a service name as the second argument.');
+	console.log('Supported service names are ' + Object.keys(fields).join(', ') + '.');
+	process.exit();
+}
+
+exports.outputdir = outputdir;
+
+
 var fs = require('fs');
 var http = require('http');
 var url = require('url');
-var auth = require('./auth.js');
 var mkdirp = require('mkdirp');
 var json2csv = require('json2csv');
-var fields = require('./fields.js');
+var auth = require('./auth.js');
 var appClient = require('./appClient.js');
 
 
@@ -42,19 +61,6 @@ getServiceByName = function(serviceName, fields, callBack) {
 
 
 
-outputdir = process.argv[2];
-serviceName = process.argv[3];
-
-if (typeof outputdir == 'undefined') {
-	console.log('\nPlease enter the output directory as the first argument.');
-	console.log('Use "." for current folder');
-	process.exit();
-}
-else if (Object.keys(fields).indexOf(serviceName) == -1) {
-	console.log('Please enter a service name as the second argument.');
-	console.log('Supported service names are ' + Object.keys(fields).join(', ') + '.');
-	process.exit();
-}
 
 
 getServiceByName(serviceName, fields, function(data) {

@@ -2,7 +2,11 @@ var fs = require('fs');
 var http = require('http');
 var auth = require('./auth.js');
 var util = require('util');
-var tokenPath = './token';
+var tokenPath = module.parent.exports.outputdir + '/token';
+
+
+
+
 
 exports.tokenValue = function (callBack) {
 	if (exports.isValidFromDisk()) {
