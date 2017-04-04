@@ -2,6 +2,7 @@
 	"name": "appnexus-sanoma",
 	"version": "0.0.1",
 	"dependencies": {
-		"mkdirp": "0.5.1"
+		"mkdirp": "0.5.1",
+		"json2csv": "3.7.3"
 	}
 }

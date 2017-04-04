@@ -25,51 +25,49 @@ getFeed = function(feedName, feedDay, feedHour, callBack) {
 		
 				for (i in siphonData.siphons) {
 					
-					(function(siphon) {
+					(function(siphon, noParts) {
 					
 						if (siphon.name == feedName && siphon.hour == feedId) {
-							console.log('\nFound feed "' + siphon.name + '", hour "' + siphon.hour + '", getting splits ..');
-							partsLeft = siphon.splits.length - 1;
-							
+							console.log('\nProcessing feed: "' + siphon.name + '", day & hour: "' + siphon.hour + '"..');
+												
 							splits = siphonData.siphons[i].splits.map(function (s) {
 								return {part: s.part, path: '/siphon-download?siphon_name=' + siphon.name + '&hour=' + siphon.hour + '&timestamp=' + siphon.timestamp + '&member_id=7463&split_part=' + s.part}
 							});
-																
+						
 							getSplit = function() {
 								split = splits.shift();
 								path = split.path;
 								part = split.part;
 								
 								appClient.appNexusRequest({'path': path, 'method': 'GET'}, token, null, function(siphonLocation, headers) { 
-									console.log('Download data from "' + path + '" ..');
-									
-									(function (downloadLocation, saveDirectory, saveFileName) {
+								
+									(function (downloadLocation, saveDirectory, saveFileName, part) {
 										savePath = saveDirectory + '/' + saveFileName;
 										mkdirp.sync(saveDirectory);
-										console.log(savePath);
 										if (fs.existsSync(savePath)) {
-											console.log('Feed already exists on disk!');
+											console.log('Part ' + (parseInt(part) + 1) + '/' + noParts + ': download already exists on disk!');
 											(splits.length > 0) ? getSplit() : callBack(true);
 										}
 										else {
+											console.log('Part ' + (parseInt(part) + 1) + '/' + noParts + ': downloading data..');
 											appClient.appNexusRequest({host: downloadLocation.hostname, 'path': downloadLocation.path, 'method': 'GET', 'encoding': 'binary'}, token, null, function(siphonDownload) { 
-												console.log('Saving data to "' + savePath + '" ..');
 												fs.writeFileSync(savePath, siphonDownload, 'binary');
+												console.log('Part ' + (parseInt(part) + 1) + '/' + noParts + ': saved data to disk!');
 												(splits.length > 0) ? getSplit() : callBack(true);
 											});
 										}
-									})(url.parse(headers.location), './data/feeds/' + siphon.name + '/' + feedDay, feedId + '_' + part + '.gz')
+									})(url.parse(headers.location), outputdir + '/data/feeds/' + siphon.name + '/' + feedDay, feedId + '_' + part + '.gz', part)
 								});
 							}
 							
 							if (splits.length > 0)
 								getSplit();
 							else {
-								console.log('No part splits were found ..')
+								console.log('No part splits were found!')
 								callBack(true);
 							}
 						}
-					})(siphonData.siphons[i])
+					})(siphonData.siphons[i], siphonData.siphons[i].splits.length)
 				}
 			}
 				
@@ -81,14 +79,14 @@ getFeed = function(feedName, feedDay, feedHour, callBack) {
 				mtime = 0;
 			
 			if (Date.now() - mtime > 3600 * 1000) {
-				console.log("Siphon data out of date, getting from API ..");
+				console.log("Siphon data out of date, getting from API..");
 				appClient.appNexusRequest({'path': '/siphon', 'method': 'GET'}, token, null, function(siphonData) { 
 					fs.writeFileSync(siphonPath, siphonData);
 					handleSiphon(siphonData); 
 				});
 			}
 			else {
-				console.log("Siphon data read from disk");
+				//console.log("Siphon data read from disk");
 				siphonData = fs.readFileSync(siphonPath, 'utf-8');
 				handleSiphon(siphonData); 
 			}
@@ -123,20 +121,25 @@ getFeedByDay = function(feed, day, callBack) {
 
 
 
-feed = process.argv[2];
-day = process.argv[3];
-hour = process.argv[4];
+outputdir = process.argv[2];
+feed = process.argv[3];
+day = process.argv[4];
+hour = process.argv[5];
 
 allowedFeeds = ['standard_feed', 'segment_feed', 'bid_landscape_feed', 'auction_segment_feed'];
 
-
-if (allowedFeeds.indexOf(feed) == -1) {
-	console.log('\nPlease enter the type of feed you want to use as the first argument.');
+if (typeof outputdir == 'undefined') {
+	console.log('\nPlease enter the output directory as the first argument.');
+	console.log('Use "." for current folder');
+	process.exit();
+}
+else if (allowedFeeds.indexOf(feed) == -1) {
+	console.log('\nPlease enter the type of feed you want to use as the second argument.');
 	console.log('Possible feeds include: ' + allowedFeeds.join(', ') + '.');
 	process.exit();
 }
 else if (new RegExp('^[0-9]{4}_[0-9]{2}_[0-9]{2}$').test(day) == false) {
-	console.log('\nPlease enter a correct day as second argument.');
+	console.log('\nPlease enter a correct day as third argument.');
 	console.log('The correct format to use is YYYY_MM_DD');
 	process.exit();
 }
