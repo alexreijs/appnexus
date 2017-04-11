@@ -3,7 +3,7 @@ feed = process.argv[3];
 day = process.argv[4];
 hour = process.argv[5];
 
-allowedFeeds = ['standard_feed', 'segment_feed', 'bid_landscape_feed', 'auction_segment_feed'];
+allowedFeeds = ['standard_feed', 'segment_feed', 'bid_landscape_feed', 'auction_segment_feed', 'auction_kv_labels_feed'];
 
 if (typeof outputdir == 'undefined') {
 	console.log('\nPlease enter the output directory as the first argument.');

@@ -37,6 +37,10 @@ getServiceByName = function(serviceName, fields, callBack) {
 				response = JSON.parse(data).response;
 				response[serviceName + 's'].forEach(function(o) {dataArray.push(o);})
 				
+				//dataArray.forEach(function(o) {
+					;
+				//})
+				
 				if (response.start_element + response.num_elements < response.count)
 					setTimeout(getService, 200, response.start_element + response.num_elements);
 				else {
@@ -50,7 +54,7 @@ getServiceByName = function(serviceName, fields, callBack) {
 							saveCSV = false;
 					})
 					
-					saveCSV ? fs.writeFileSync(saveDirectory + '/' + serviceName + '.csv', json2csv({ data: dataArray, fields: fields[serviceName]})) : console.log('Number of defined fields (columns) incorrect, please specify fields.js!');					
+					saveCSV ? fs.writeFileSync(saveDirectory + '/' + serviceName + '.csv', json2csv({ data: dataArray, fields: fields[serviceName]})) : console.log('Number of defined fields (columns) incorrect, please specify fields.js!\nUse following fields:\n"' + Object.keys(dataArray[0]).join('","') + '"');
 					callBack(dataArray);
 				}					
 			});
