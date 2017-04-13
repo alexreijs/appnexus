@@ -1,5 +1,7 @@
 outputdir = process.argv[2];
-serviceName = process.argv[3];
+serviceName = process.argv[3] || '';
+queryString = process.argv[4] || '';
+
 allowedServices = ["campaign","creative","line-item","publisher"];
 
 if (typeof outputdir == 'undefined') {
@@ -12,6 +14,7 @@ else if (serviceName.length == 0) {
 	console.log('Sample service names are ' + allowedServices.join(', ') + '.');
 	process.exit();
 }
+
 
 exports.outputdir = outputdir;
 
@@ -29,20 +32,32 @@ getServiceByName = function(serviceName, callBack) {
 	appClient.tokenValue(function(token) {
 		dataArray = [];
 		getService = function(startElement) {
-			path = '/' + serviceName + '?start_element=' + startElement;
+			path = '/' + serviceName + '?' + queryString + (queryString.length > 0 ? '&' : '') + 'start_element=' + startElement;
+			console.log(path);
 			appClient.appNexusRequest({'path': path, 'method': 'GET'}, token, auth, function (data) {
 				response = JSON.parse(data).response;
-				response[serviceName.replace(/y$/, 'ie') + 's'].forEach(function(o) {dataArray.push(o);})
+				responseKeys = Object.keys(response);
+				lastKey = responseKeys[responseKeys.length - 1];
+				serviceResponse = response[lastKey];
+				//console.log(response);
 				
-				if (response.start_element + response.num_elements < response.count)
-					setTimeout(getService, 200, response.start_element + response.num_elements);
+				if (typeof serviceResponse == 'object' && serviceResponse.length > 0) {
+					serviceResponse.forEach(function(o) {dataArray.push(o);})
+					if (response.start_element + response.num_elements < response.count)
+						setTimeout(getService, 100, response.start_element + response.num_elements);
+					else {
+						saveDirectory = outputdir + '/data/services';
+						mkdirp.sync(saveDirectory);			
+						fs.writeFileSync(saveDirectory + '/' + serviceName + '.json', JSON.stringify(dataArray));
+						fs.writeFileSync(saveDirectory + '/' + serviceName + '.csv', json2csv({ data: dataArray, fields: Object.keys(dataArray[0])}));
+						console.log('Saved '  + dataArray.length + ' items.');
+						callBack(dataArray);
+					}					
+				}
 				else {
-					saveDirectory = outputdir + '/data/services';
-					mkdirp.sync(saveDirectory);			
-					fs.writeFileSync(saveDirectory + '/' + serviceName + '.json', JSON.stringify(dataArray));
-					fs.writeFileSync(saveDirectory + '/' + serviceName + '.csv', json2csv({ data: dataArray, fields: Object.keys(dataArray[0])}));
-					callBack(dataArray);
-				}					
+					console.log('No valid response found')
+					callBack(false)
+				}
 			});
 		}
 		getService(0);
