@@ -33,13 +33,10 @@ getServiceByName = function(serviceName, callBack) {
 		dataArray = [];
 		getService = function(startElement) {
 			path = '/' + serviceName + '?' + queryString + (queryString.length > 0 ? '&' : '') + 'start_element=' + startElement;
-			console.log(path);
 			appClient.appNexusRequest({'path': path, 'method': 'GET'}, token, auth, function (data) {
+				
 				response = JSON.parse(data).response;
-				responseKeys = Object.keys(response);
-				lastKey = responseKeys[responseKeys.length - 1];
-				serviceResponse = response[lastKey];
-				//console.log(response);
+				serviceResponse = response[response.dbg_info.output_term];
 				
 				if (typeof serviceResponse == 'object' && serviceResponse.length > 0) {
 					serviceResponse.forEach(function(o) {dataArray.push(o);})
