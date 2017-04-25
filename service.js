@@ -36,12 +36,20 @@ getServiceByName = function(serviceName, callBack) {
 			appClient.appNexusRequest({'path': path, 'method': 'GET'}, token, auth, function (data) {
 				
 				response = JSON.parse(data).response;
-				serviceResponse = response[response.dbg_info.output_term];
+				
+				if (/change.log/g.test(serviceName))
+					outputTerm = serviceName.replace(/\-/g, '_').toLowerCase() + 's';
+				else 
+					outputTerm = typeof response.dbg_info == 'undefined' ? serviceName + 's' : response.dbg_info.output_term;
+
+				serviceResponse = response[outputTerm];
+				
+				console.log('Getting ' + outputTerm + ': ' + Math.ceil(response.start_element / 100) + ' / ' +  Math.ceil(response.count / 100))
 				
 				if (typeof serviceResponse == 'object' && serviceResponse.length > 0) {
 					serviceResponse.forEach(function(o) {dataArray.push(o);})
 					if (response.start_element + response.num_elements < response.count)
-						setTimeout(getService, 100, response.start_element + response.num_elements);
+						getService(response.start_element + response.num_elements);
 					else {
 						saveDirectory = outputdir + '/data/services';
 						mkdirp.sync(saveDirectory);			
